@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ item.title }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        :root {
+            --background-primary: #ffffff;
+            --background-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --card-background: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --background-primary: #1a1a1a;
+            --background-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #bababa;
+            --border-color: #404040;
+            --card-background: #2d2d2d;
+        }
+
+        body {
+            background-color: var(--background-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 20px;
+        }
+
+        .item-image {
+            max-width: 500px;
+            max-height: 500px;
+            object-fit: contain;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .container {
+            background-color: var(--card-background);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            margin-bottom: 30px;
+        }
+
+        p {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        b {
+            color: var(--text-secondary);
+        }
+    </style>
+    <script>
+        // Immediately execute theme initialization
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+</head>
+<body>
+    <div class="theme-toggle">
+        <button class="btn btn-outline-primary" id="theme-toggle-btn">
+            <span class="light-icon">🌞</span>
+            <span class="dark-icon" style="display: none;">🌙</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <h1>{{ item.title }}</h1>
+        {% if item.image %}
+            <img src="data:;base64,{{ base64.b64encode(item.image).decode('utf-8') }}" alt="{{ item.title }}" class="img-fluid item-image">
+        {% endif %}
+        <p><b>Description:</b> {{ item.description }}</p>
+        <p><b>Location:</b> {{ item.location }}</p>
+        <p>
+            <b>Quantity:</b>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="decrementQuantity()">-</button>
+            <input type="number" name="quantity" id="quantity" class="form-control" value="{{ item.quantity }}" min="1">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incrementQuantity()">+</button>
+        </p>
+        <p><b>Created at:</b> {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Inventory</a>
+        <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-secondary">Edit</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const lightIcon = document.querySelector('.light-icon');
+        const darkIcon = document.querySelector('.dark-icon');
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateIcon(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon(newTheme);
+        });
+
+        function updateIcon(theme) {
+            if (theme === 'dark') {
+                lightIcon.style.display = 'none';
+                darkIcon.style.display = 'inline';
+            } else {
+                lightIcon.style.display = 'inline';
+                darkIcon.style.display = 'none';
+            }
+        }
+
+        function incrementQuantity() {
+            var quantityInput = document.getElementById('quantity');
+            var new_quantity = parseInt(quantityInput.value) + 1;
+            fetch(`/item/{{ item.id }}/update_quantity`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `quantity=${new_quantity}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    quantityInput.value = new_quantity;
+                } else {
+                    console.error('Failed to update quantity.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating quantity:', error);
+            });
+        }
+
+        function decrementQuantity() {
+            var quantityInput = document.getElementById('quantity');
+            var new_quantity = parseInt(quantityInput.value) - 1;
+            if (new_quantity > 0) { 
+                fetch(`/item/{{ item.id }}/update_quantity`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `quantity=${new_quantity}`
+                })
+                .then(response => {
+                    if (response.ok) {
+                        quantityInput.value = new_quantity;
+                    } else {
+                        console.error('Failed to update quantity.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating quantity:', error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
