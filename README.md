@@ -38,6 +38,18 @@ python app.py
 
 4. Open http://localhost:5000 in your browser
 
+## Docker Setup 🐳
+
+1. Build the Docker image:
+```bash
+docker build -t inventory-manager .
+```
+
+2. Run the container:
+```bash
+docker run -d -p 5000:5000 --name inventory inventory-manager
+```
+
 ## Tech Stack 💻
 
 - **Backend**: Flask + SQLAlchemy
@@ -81,4 +93,3 @@ MIT License
 
 ---
 Made with ❤️ by daMustermann
-```
