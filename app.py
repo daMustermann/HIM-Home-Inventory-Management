@@ -8,6 +8,8 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import or_
 from flask_wtf.csrf import generate_csrf
 from flask_wtf import FlaskForm
+from PIL import Image
+import io
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -25,6 +27,29 @@ def create_app(config_class=Config):
         return '.' in filename and \
                filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+    def process_image(image_file):
+        # Read the image
+        image = Image.open(image_file)
+        
+        # Convert to RGB if needed (for PNG transparency)
+        if image.mode in ('RGBA', 'LA'):
+            background = Image.new('RGB', image.size, (255, 255, 255))
+            background.paste(image, mask=image.split()[-1])
+            image = background
+        
+        # Calculate new dimensions
+        aspect_ratio = image.size[0] / image.size[1]
+        new_height = min(800, image.size[1])  # Updated to 800px
+        new_width = int(aspect_ratio * new_height)
+        
+        # Resize image
+        image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        
+        # Save as WebP
+        webp_buffer = io.BytesIO()
+        image.save(webp_buffer, format='WebP', quality=85, method=6)
+        return webp_buffer.getvalue()
+
     @app.route('/', methods=['GET', 'POST'])
     def index():
         if request.method == 'POST':
@@ -35,7 +60,7 @@ def create_app(config_class=Config):
                 image_file = request.files['image']
                 
                 if image_file and allowed_file(image_file.filename):
-                    image_data = image_file.read()
+                    image_data = process_image(image_file)
                 else:
                     image_data = None
 
@@ -100,16 +125,29 @@ def create_app(config_class=Config):
                 item.description = request.form['description']
                 item.location = request.form['location']
                 item.quantity = int(request.form['quantity'])
-                image_file = request.files['image']
-                if image_file:
-                    item.image = image_file.read()
+                
+                # Add debug logging
+                print("Processing image upload in edit route")
+                image_file = request.files.get('image')
+                if image_file and image_file.filename:
+                    print(f"Image file received: {image_file.filename}")
+                    if allowed_file(image_file.filename):
+                        print("File type allowed, processing image")
+                        image_data = process_image(image_file)
+                        item.image = image_data
+                        print("Image processed and saved")
+                    else:
+                        print(f"File type not allowed: {image_file.filename}")
+                
                 db.session.commit()
                 flash('Item updated successfully!', 'success')
                 return redirect(url_for('item', item_id=item.id))
             except Exception as e:
-                print(f"Error updating item: {e}")
+                print(f"Error updating item: {str(e)}")
+                db.session.rollback()
                 flash('Error updating item. Please try again.', 'danger')
                 return redirect(url_for('edit_item', item_id=item.id))
+        
         return render_template('edit_item.html', item=item)
 
     @app.route('/item/<int:item_id>/update_quantity', methods=['POST'])
