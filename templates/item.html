@@ -1,137 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home Inventory Management - {{ item.title }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.title }} - Inventory Management</title>
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicons/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+    
     <style>
-        :root {
+        :root[data-theme="light"] {
             --background-primary: #ffffff;
             --background-secondary: #f8f9fa;
             --text-primary: #212529;
             --text-secondary: #6c757d;
             --border-color: #dee2e6;
             --card-background: #ffffff;
+            --nav-shadow: rgba(0, 0, 0, 0.1);
         }
 
-        [data-theme="dark"] {
-            --background-primary: #1a1a1a;
-            --background-secondary: #2d2d2d;
+        :root[data-theme="dark"] {
+            --background-primary: #121212;
+            --background-secondary: #1e1e1e;
             --text-primary: #ffffff;
-            --text-secondary: #bababa;
+            --text-secondary: #cccccc;
             --border-color: #404040;
-            --card-background: #2d2d2d;
+            --card-background: #1e1e1e;
+            --nav-shadow: rgba(255, 255, 255, 0.1);
         }
 
         body {
             background-color: var(--background-primary);
             color: var(--text-primary);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            padding: 20px;
+            transition: all 0.3s ease;
         }
 
-        .item-image {
-            max-width: 500px;
-            max-height: 500px;
-            object-fit: contain;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            margin: 20px 0;
+        .navbar {
+            background-color: var(--background-secondary) !important;
+            box-shadow: 0 2px 4px var(--nav-shadow);
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
         }
 
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
         }
 
-        .container {
-            background-color: var(--card-background);
-            padding: 30px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-top: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .item-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .item-description {
+        #theme-toggle-btn {
+            background: none;
+            border: none;
             font-size: 1.2rem;
-            margin-bottom: 20px;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
         }
 
         .item-details {
-            font-size: 1rem;
-            color: var(--text-secondary);
+            background-color: var(--card-background);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--nav-shadow);
         }
 
-        .btn-primary {
-            margin-top: 20px;
-        }
-
-        h1 {
+        .quantity-display {
+            font-size: 1.2rem;
+            font-weight: 500;
             color: var(--text-primary);
-            margin-bottom: 30px;
+            margin: 1rem 0;
         }
 
-        p {
-            color: var(--text-primary);
-            margin-bottom: 15px;
-        }
-
-        b {
-            color: var(--text-secondary);
+        .btn {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            transition: all 0.2s ease;
         }
     </style>
-    <script>
-        // Immediately execute theme initialization
-        (function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        })();
-    </script>
 </head>
 <body>
-    <div class="theme-toggle">
-        <button class="btn btn-outline-primary" id="theme-toggle-btn">
-            <span class="light-icon">🌞</span>
-            <span class="dark-icon" style="display: none;">🌙</span>
-        </button>
-    </div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-box-open mr-2"></i>
+                Home Inventory Manager
+            </a>
+            <div class="ml-auto">
+                <button id="theme-toggle-btn" class="btn btn-link">
+                    <i class="fas fa-sun light-icon"></i>
+                    <i class="fas fa-moon dark-icon" style="display: none;"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Main Content -->
     <div class="container">
-        <h1>{{ item.title }}</h1>
-        {% if item.image %}
-            <img src="data:;base64,{{ base64.b64encode(item.image).decode('utf-8') }}" alt="{{ item.title }}" class="img-fluid item-image">
-        {% endif %}
-        <p><b>Description:</b> {{ item.description }}</p>
-        <p><b>Location:</b> {{ item.location }}</p>
-        <p>
-            <b>Quantity:</b>
-            <div class="input-group" style="max-width: 150px;">
-            <div class="input-group-prepend">
-                <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
+        <div class="item-details">
+            <h1 class="mb-4">{{ item.title }}</h1>
+            
+            {% if item.image %}
+            <div class="text-center mb-4">
+                <img src="data:;base64,{{ base64.b64encode(item.image).decode('utf-8') }}" 
+                     alt="{{ item.title }}" 
+                     class="img-fluid">
             </div>
-            <input type="number" name="quantity" id="quantity" class="form-control text-center" value="{{ item.quantity }}" min="1">
-            <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity()">+</button>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="text-muted">Description</h5>
+                    <p class="mb-4">{{ item.description }}</p>
+
+                    <h5 class="text-muted">Location</h5>
+                    <p class="mb-4">{{ item.location }}</p>
+
+                    <h5 class="text-muted">Quantity</h5>
+                    <p class="quantity-display">{{ item.quantity }}</p>
+
+                    <p class="text-muted mt-4">
+                        <small>Created: {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </p>
+                </div>
             </div>
+
+            <div class="mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Inventory
+                </a>
+                <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Item
+                </a>
             </div>
-        </p>
-        <p><b>Created at:</b> {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Inventory</a>
-        <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-secondary">Edit</a>
+        </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
+        // Theme toggle functionality
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const lightIcon = document.querySelector('.light-icon');
         const darkIcon = document.querySelector('.dark-icon');
@@ -156,52 +179,6 @@
             } else {
                 lightIcon.style.display = 'inline';
                 darkIcon.style.display = 'none';
-            }
-        }
-
-        function incrementQuantity() {
-            var quantityInput = document.getElementById('quantity');
-            var new_quantity = parseInt(quantityInput.value) + 1;
-            fetch(`/item/{{ item.id }}/update_quantity`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `quantity=${new_quantity}`
-            })
-            .then(response => {
-                if (response.ok) {
-                    quantityInput.value = new_quantity;
-                } else {
-                    console.error('Failed to update quantity.');
-                }
-            })
-            .catch(error => {
-                console.error('Error updating quantity:', error);
-            });
-        }
-
-        function decrementQuantity() {
-            var quantityInput = document.getElementById('quantity');
-            var new_quantity = parseInt(quantityInput.value) - 1;
-            if (new_quantity > 0) { 
-                fetch(`/item/{{ item.id }}/update_quantity`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `quantity=${new_quantity}`
-                })
-                .then(response => {
-                    if (response.ok) {
-                        quantityInput.value = new_quantity;
-                    } else {
-                        console.error('Failed to update quantity.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error updating quantity:', error);
-                });
             }
         }
     </script>
