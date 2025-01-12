@@ -47,7 +47,7 @@ docker build -t inventory-manager .
 
 2. Run the container:
 ```bash
-docker run -d -p 5000:5000 --name inventory inventory-manager
+docker run -p 5000:5000 inventory-app
 ```
 
 ## Tech Stack 💻
