@@ -1,0 +1,107 @@
+<!-- Reusable Navbar Template -->
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-box-open mr-2"></i>
+            Home Inventory Manager
+        </a>
+        <div class="ml-auto">
+            <button id="theme-toggle-btn" class="btn btn-link">
+                <i class="fas fa-sun light-icon"></i>
+                <i class="fas fa-moon dark-icon" style="display: none;"></i>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Navbar Styles -->
+<style>
+    :root[data-theme="light"] {
+        --background-primary: #ffffff;
+        --background-secondary: #f8f9fa;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --border-color: #dee2e6;
+        --card-background: #ffffff;
+        --nav-shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    :root[data-theme="dark"] {
+        --background-primary: #121212;
+        --background-secondary: #1e1e1e;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --border-color: #404040;
+        --card-background: #1e1e1e;
+        --nav-shadow: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+        background-color: var(--background-primary);
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .navbar {
+        background-color: var(--background-secondary) !important;
+        box-shadow: 0 2px 4px var(--nav-shadow);
+        padding: 1rem 0;
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary) !important;
+        transition: transform 0.2s ease;
+    }
+
+    .navbar-brand:hover {
+        transform: scale(1.05);
+    }
+
+    #theme-toggle-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        color: var(--text-primary);
+        transition: transform 0.2s ease;
+    }
+
+    #theme-toggle-btn:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+<!-- Theme Toggle Script -->
+<script>
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const lightIcon = document.querySelector('.light-icon');
+    const darkIcon = document.querySelector('.dark-icon');
+    
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateIcon(savedTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateIcon(newTheme);
+    });
+
+    function updateIcon(theme) {
+        if (theme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'inline';
+        } else {
+            lightIcon.style.display = 'inline';
+            darkIcon.style.display = 'none';
+        }
+    }
+</script>

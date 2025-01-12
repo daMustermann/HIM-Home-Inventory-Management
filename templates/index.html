@@ -1,33 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Inventory Management</title>
-
-    <div class="search-container mb-4">
-        <div class="input-group">
-            <input type="text" 
-                   id="searchInput" 
-                   class="form-control" 
-                   placeholder="Search items..." 
-                   autocomplete="off">
-            <div class="input-group-append">
-                <span class="input-group-text">
-                    <i class="fas fa-search"></i>
-                </span>
-            </div>
-        </div>
-        <div id="searchResults" class="search-results"></div>
-    </div>
-
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicons/favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+    
     <style>
+        :root[data-theme="light"] {
+            --background-primary: #ffffff;
+            --background-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --card-background: #ffffff;
+            --nav-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        :root[data-theme="dark"] {
+            --background-primary: #121212;
+            --background-secondary: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-color: #404040;
+            --card-background: #1e1e1e;
+            --nav-shadow: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--background-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .navbar {
+            background-color: var(--background-secondary) !important;
+            box-shadow: 0 2px 4px var(--nav-shadow);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary) !important;
+            transition: transform 0.2s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
         .search-container {
-        position: relative;
-        margin: 20px 0;
+            position: relative;
+            margin: 20px 0;
+            z-index: 1000;
         }
 
         .search-results {
@@ -35,169 +70,126 @@
             top: 100%;
             left: 0;
             right: 0;
-            z-index: 1000;
             background-color: var(--card-background);
             border: 1px solid var(--border-color);
             border-radius: 4px;
             max-height: 400px;
             overflow-y: auto;
             display: none;
+            z-index: 1001;
         }
 
         .search-result-item {
-            padding: 10px;
+            padding: 10px 15px;
             border-bottom: 1px solid var(--border-color);
             cursor: pointer;
             transition: background-color 0.2s ease;
-        }
-
-        .search-result-item:last-child {
-            border-bottom: none;
         }
 
         .search-result-item:hover {
             background-color: var(--background-secondary);
         }
 
-        .search-result-title {
-            font-weight: bold;
-            color: var(--text-primary);
-        }
-
-        .search-result-details {
-            font-size: 0.9em;
-            color: var(--text-secondary);
-        }
-
-        :root {
-            --background-primary: #ffffff;
-            --background-secondary: #f8f9fa;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --border-color: #dee2e6;
-            --card-background: #ffffff;
-        }
-
-        [data-theme="dark"] {
-            --background-primary: #1a1a1a;
-            --background-secondary: #2d2d2d;
-            --text-primary: #ffffff;
-            --text-secondary: #bababa;
-            --border-color: #404040;
-            --card-background: #2d2d2d;
-        }
-
-        body {
-            background-color: var(--background-primary);
-            color: var(--text-primary);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            padding: 20px;
-        }
-
         .card {
             background-color: var(--card-background);
-            border-color: var(--border-color);
-            margin-bottom: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, box-shadow 0.3s;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px var(--nav-shadow);
+            margin: 1rem 0;
+            transition: transform 0.2s ease;
         }
 
-        .card-body {
-            color: var(--text-primary);
-            padding: 20px;
-        }
-
-        .card-title a {
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .card-title a:hover {
-            color: var(--text-color-hover);
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         .form-control {
             background-color: var(--background-secondary);
-            border-color: var(--border-color);
+            border: 1px solid var(--border-color);
             color: var(--text-primary);
+            border-radius: 8px;
+            padding: 0.75rem;
         }
 
         .form-control:focus {
             background-color: var(--background-secondary);
             color: var(--text-primary);
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+        #theme-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            transition: transform 0.2s ease;
         }
 
-        .card-img-top {
-            max-height: 200px;
-            object-fit: contain;
+        #theme-toggle-btn:hover {
+            transform: scale(1.1);
         }
 
-        .pagination .page-link {
+        .pagination {
+            margin-top: 2rem;
+        }
+
+        .page-link {
             background-color: var(--background-secondary);
             border-color: var(--border-color);
             color: var(--text-primary);
         }
 
-        .pagination .page-item.active .page-link {
-            background-color: #007bff;
-            border-color: #007bff;
-            color: #ffffff;
-        }
-
-        .pagination .page-item.disabled .page-link {
-            background-color: var(--background-secondary);
-            border-color: var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        .flashes {
-            padding: 10px;
-            margin-bottom: 20px;
+        .page-link:hover {
+            background-color: var(--background-primary);
+            color: var(--text-primary);
         }
     </style>
-        <script>
-            // Immediately execute theme initialization
-            (function() {
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-            })();
-        </script>
-        
 </head>
 <body>
-    <div class="theme-toggle">
-        <button class="btn btn-outline-primary" id="theme-toggle-btn">
-            <span class="light-icon">🌞</span>
-            <span class="dark-icon" style="display: none;">🌙</span>
-        </button>
-    </div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-box-open mr-2"></i>
+                Home Inventory Manager
+            </a>
+            <div class="ml-auto">
+                <button id="theme-toggle-btn" class="btn btn-link">
+                    <i class="fas fa-sun light-icon"></i>
+                    <i class="fas fa-moon dark-icon" style="display: none;"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
 
+    <!-- Main Content -->
     <div class="container">
-        <h1>Home Inventory Management</h1>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flashes">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
+        <!-- Search Container -->
+        <div class="search-container mb-4">
+            <div class="input-group">
+                <input type="text" 
+                       id="searchInput" 
+                       class="form-control" 
+                       placeholder="Search items..." 
+                       autocomplete="off">
+                <div class="input-group-append">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
                 </div>
-            {% endif %}
-        {% endwith %}
+            </div>
+            <div id="searchResults" class="search-results shadow-sm"></div>
+        </div>
 
+        <!-- Add Item Button -->
         <button id="toggleFormBtn" class="btn btn-primary mb-3">
             <i class="fas fa-plus"></i> Add New Item
         </button>
-        
+
+        <!-- Add Item Form -->
         <div id="itemFormContainer" style="display: none;">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -207,133 +199,84 @@
                     </button>
                 </div>
                 <div class="card-body">
-
-        <form method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="title">Title:</label>
-                <input type="text" name="title" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Description:</label>
-                <textarea name="description" class="form-control"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="quantity">Quantity:</label>
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
-                    </div>
-                    <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity()">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="location">Location:</label>
-                <input type="text" name="location" class="form-control">
-            </div>
-
-            <div class="form-group">
-                <label for="image">Image:</label>
-                <input type="file" name="image" class="form-control-file">
-            </div>
-
-            <button type="submit" class="btn btn-primary">Add Item</button>
-        </form>
-        </div>
-    </div>
-</div>
-
-        <h2>Current Items</h2>
-        {% for item in items.items %}
-            <div class="card">
-                <div class="card-body">
-                    {% if item.image %}
-                    <a href="{{ url_for('item', item_id=item.id) }}">
-                        <img src="data:;base64,{{ base64.b64encode(item.image).decode('utf-8') }}" class="card-img-top" alt="{{ item.title }}">
-                    </a>
-                    {% endif %}
-                    <h5 class="card-title">
-                        <a href="{{ url_for('item', item_id=item.id) }}">{{ item.title }}</a>
-                    </h5>
-                    
-                    <p class="card-text">
-                        {{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}
-                    </p>
-                    <p>
-                        <b>Quantity:</b> {{item.quantity}}
-                    </p>
-                    <p>  <b>Location:</b> {{ item.location }}</p> <div class="btn-group"></div>
-                    <form action="{{ url_for('delete', item_id=item.id) }}" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
+                    <form method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" class="form-control" id="location" name="location">
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
+                                </div>
+                                <input type="number" class="form-control text-center" id="quantity" name="quantity" value="1" min="1">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity()">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Image</label>
+                            <input type="file" class="form-control-file" id="image" name="image">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Item</button>
                     </form>
-                    <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-secondary">Edit</a>
                 </div>
             </div>
-        {% else %}
-            <p>No items in the inventory yet.</p>
-        {% endfor %}
+        </div>
 
+        <!-- Items List -->
+        <div class="row">
+            {% for item in items.items %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    {% if item.image %}
+                    <img src="data:;base64,{{ base64.b64encode(item.image).decode('utf-8') }}" 
+                         class="card-img-top" 
+                         alt="{{ item.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.title }}</h5>
+                        <p class="card-text">{{ item.description }}</p>
+                        <p class="card-text"><small class="text-muted">Location: {{ item.location }}</small></p>
+                        <a href="{{ url_for('item', item_id=item.id) }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
         <nav aria-label="Page navigation">
-            <ul class="pagination">
-                {% if items.has_prev %}
-                    <li class="page-item"><a class="page-link" href="{{ url_for('index', page=items.prev_num) }}">Previous</a></li>
-                {% else %}
-                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                {% endif %}
-
-                {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            <ul class="pagination justify-content-center">
+                {% for page_num in items.iter_pages() %}
                     {% if page_num %}
-                        {% if items.page == page_num %}
-                            <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a></li>
-                        {% endif %}
+                        <li class="page-item {{ 'active' if page_num == items.page else '' }}">
+                            <a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+                        </li>
                     {% else %}
-                        <li class="page-item disabled"><a class="page-link" href="#">&hellip;</a></li>
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
                     {% endif %}
                 {% endfor %}
-
-                {% if items.has_next %}
-                    <li class="page-item"><a class="page-link" href="{{ url_for('index', page=items.next_num) }}">Next</a></li>
-                {% else %}
-                    <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
-                {% endif %}
             </ul>
         </nav>
     </div>
 
-    <script>
-        document.getElementById('toggleFormBtn').addEventListener('click', function() {
-            const form = document.getElementById('itemFormContainer');
-            const btn = this;
-            
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
-                btn.innerHTML = '<i class="fas fa-times"></i> Close Form';
-                btn.classList.replace('btn-primary', 'btn-danger');
-            } else {
-                form.style.display = 'none';
-                btn.innerHTML = '<i class="fas fa-plus"></i> Add New Item';
-                btn.classList.replace('btn-danger', 'btn-primary');
-            }
-        });
-    
-        document.getElementById('closeForm').addEventListener('click', function() {
-            document.getElementById('itemFormContainer').style.display = 'none';
-            const btn = document.getElementById('toggleFormBtn');
-            btn.innerHTML = '<i class="fas fa-plus"></i> Add New Item';
-            btn.classList.replace('btn-danger', 'btn-primary');
-        });
-    </script>
-    
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
         // Theme toggle functionality
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
@@ -363,6 +306,78 @@
             }
         }
 
+        // Form toggle functionality
+        document.getElementById('toggleFormBtn').addEventListener('click', function() {
+            const form = document.getElementById('itemFormContainer');
+            const btn = this;
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-times"></i> Close Form';
+                btn.classList.replace('btn-primary', 'btn-danger');
+            } else {
+                form.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-plus"></i> Add New Item';
+                btn.classList.replace('btn-danger', 'btn-primary');
+            }
+        });
+
+        document.getElementById('closeForm').addEventListener('click', function() {
+            document.getElementById('itemFormContainer').style.display = 'none';
+            const btn = document.getElementById('toggleFormBtn');
+            btn.innerHTML = '<i class="fas fa-plus"></i> Add New Item';
+            btn.classList.replace('btn-danger', 'btn-primary');
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            if (query.length > 0) {
+                fetch(`/search?q=${encodeURIComponent(query)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Search failed');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Search results:', data); // Debug log
+                        searchResults.innerHTML = '';
+                        searchResults.style.display = 'block';
+                        
+                        if (data.length === 0) {
+                            searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                            return;
+                        }
+                        
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'search-result-item';
+                            div.innerHTML = `
+                                <div class="font-weight-bold">${item.title}</div>
+                                <small class="text-muted">Location: ${item.location}</small>
+                            `;
+                            div.addEventListener('click', () => {
+                                window.location.href = `/item/${item.id}`;
+                            });
+                            searchResults.appendChild(div);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<div class="search-result-item text-danger">Error performing search</div>';
+                        searchResults.style.display = 'block';
+                    });
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Quantity controls
         function incrementQuantity() {
             var quantityInput = document.getElementById('quantity');
             quantityInput.value = parseInt(quantityInput.value) + 1;
@@ -374,72 +389,14 @@
             if (currentValue > 1) {
                 quantityInput.value = currentValue - 1;
             }
-}
-    </script>
+        }
 
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const searchResults = document.getElementById('searchResults');
-        let debounceTimer;
-
-        searchInput.addEventListener('input', function() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const query = this.value.trim();
-                if (query.length >= 2) {
-                    performSearch(query);
-                } else {
-                    searchResults.style.display = 'none';
-                }
-            }, 300);
-        });
-
-        document.addEventListener('click', function(event) {
-            if (!searchResults.contains(event.target) && event.target !== searchInput) {
+        // Close search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
                 searchResults.style.display = 'none';
             }
         });
-
-        async function performSearch(query) {
-            try {
-                const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
-                const results = await response.json();
-                
-                if (results.length > 0) {
-                    displayResults(results);
-                } else {
-                    searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
-                    searchResults.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Search error:', error);
-            }
-        }
-
-        function displayResults(results) {
-            searchResults.innerHTML = '';
-            
-            results.forEach(result => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'search-result-item';
-                resultItem.innerHTML = `
-                    <div class="search-result-title">${result.title}</div>
-                    <div class="search-result-details">
-                        ${result.description || 'No description'}
-                        <br>
-                        Location: ${result.location || 'No location'}
-                    </div>
-                `;
-                
-                resultItem.addEventListener('click', () => {
-                    window.location.href = `/item/${result.id}`;
-                });
-                
-                searchResults.appendChild(resultItem);
-            });
-            
-            searchResults.style.display = 'block';
-        }
     </script>
 </body>
 </html>

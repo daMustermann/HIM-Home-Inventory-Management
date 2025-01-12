@@ -1,17 +1,25 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
 from config import Config
 from models import db, Item
 import base64
 from werkzeug.utils import secure_filename
-from flask import jsonify
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import or_
+from flask_wtf.csrf import generate_csrf
+from flask_wtf import FlaskForm
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.config['SECRET_KEY'] = 'your-secret-key-here'  # Replace with secure key
+    csrf = CSRFProtect(app)
     
     db.init_app(app)
+
+    @app.context_processor
+    def utility_processor():
+        return dict(csrf_token=generate_csrf)
 
     def allowed_file(filename):
         return '.' in filename and \
@@ -65,32 +73,23 @@ def create_app(config_class=Config):
             flash('Error deleting item. Please try again.', 'danger')
             return redirect(url_for('index'))
 
-    @app.route('/search')  # Moved inside create_app()
+    @app.route('/search')
     def search():
-        query = request.args.get('query', '')
-        if not query:
-            return jsonify([])
-        
-        # Search in both title and description
-        search_query = f"%{query}%"
-        items = Item.query.filter(
-            or_(
-                Item.title.ilike(search_query),
-                Item.description.ilike(search_query),
-                Item.location.ilike(search_query)
-            )
-        ).limit(10).all()
-    
-        results = []
-        for item in items:
-            results.append({
+        query = request.args.get('q', '')
+        if query:
+            items = Item.query.filter(
+                or_(
+                    Item.title.ilike(f'%{query}%'),
+                    Item.description.ilike(f'%{query}%'),
+                    Item.location.ilike(f'%{query}%')
+                )
+            ).all()
+            return jsonify([{
                 'id': item.id,
                 'title': item.title,
-                'description': item.description[:100] + '...' if item.description and len(item.description) > 100 else item.description,
                 'location': item.location
-            })
-    
-        return jsonify(results)
+            } for item in items])
+        return jsonify([])
 
     @app.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
     def edit_item(item_id):
@@ -117,13 +116,14 @@ def create_app(config_class=Config):
     def update_quantity(item_id):
         item = Item.query.get_or_404(item_id)
         try:
-            new_quantity = int(request.form['quantity'])
+            data = request.get_json()
+            new_quantity = int(data.get('quantity', 1))
             item.quantity = new_quantity
             db.session.commit()
-            return jsonify({'message': 'Quantity updated successfully'}), 200
+            return jsonify({'quantity': item.quantity})
         except Exception as e:
-            print(f"Error updating quantity: {e}")
-            return jsonify({'message': 'Error updating quantity'}), 500
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
 
     return app
 
