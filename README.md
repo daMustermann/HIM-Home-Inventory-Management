@@ -82,35 +82,6 @@ docker run -p 5000:5000 inventory-app
 - Maintains aspect ratio
 - High-quality Lanczos resampling
 
-# Plan
-1. Add image processing features
-2. Update requirements
-3. Add technical details
-4. Update documentation
-
-```markdown
-
-
-...existing code...
-
-### Image Processing 🖼️
-- Automatic image resizing to 800px max height
-- WebP conversion for optimal file size
-- PNG transparency handling
-- Maintains aspect ratio
-- High-quality Lanczos resampling
-
-## Dependencies 📦
-
-```txt
-Flask==2.0.1
-Flask-SQLAlchemy==2.5.1
-Flask-WTF==1.0.0
-Pillow==10.1.0
-Werkzeug==2.0.1
-SQLAlchemy==1.4.23
-```
-
 ## Technical Details 🔧
 
 ### Image Processing
@@ -127,6 +98,20 @@ Supported image formats:
 - PNG (with transparency support)
 - JPG/JPEG
 - GIF
+
+
+## Dependencies 📦
+
+```txt
+Flask==2.0.1
+Flask-SQLAlchemy==2.5.1
+Flask-WTF==1.0.0
+Pillow==10.1.0
+Werkzeug==2.0.1
+SQLAlchemy==1.4.23
+```
+
+
 
 
 ## Configuration ⚙️
