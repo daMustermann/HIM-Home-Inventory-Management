@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Item - Home Inventory Management</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicons/favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <style>
+        :root[data-theme="light"] {
+            --background-primary: #ffffff;
+            --background-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --card-background: #ffffff;
+            --nav-shadow: rgba(0, 0, 0, 0.1);
+            --input-bg: #ffffff;
+            --input-border: #ced4da;
+            --input-text: #495057;
+            --input-focus-border: #80bdff;
+            --input-focus-shadow: rgba(0, 123, 255, 0.25);
+        }
+
+        :root[data-theme="dark"] {
+            --background-primary: #121212;
+            --background-secondary: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-color: #404040;
+            --card-background: #1e1e1e;
+            --nav-shadow: rgba(255, 255, 255, 0.1);
+            --input-bg: #2d2d2d;
+            --input-border: #404040;
+            --input-text: #ffffff;
+            --input-focus-border: #0056b3;
+            --input-focus-shadow: rgba(0, 86, 179, 0.25);
+        }
+
+        body {
+            background-color: var(--background-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .navbar {
+            background-color: var(--background-secondary) !important;
+            box-shadow: 0 2px 4px var(--nav-shadow);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary) !important;
+            transition: transform 0.2s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-color: var(--border-color);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn {
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-control {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--input-text);
+        }
+
+        .form-control:focus {
+            background-color: var(--input-bg);
+            border-color: var(--input-focus-border);
+            color: var(--input-text);
+            box-shadow: 0 0 0 0.2rem var(--input-focus-shadow);
+        }
+
+        textarea.form-control {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+        }
+
+        .input-group-text {
+            background-color: var(--background-secondary);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+
+        .suggestion-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .suggestion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px var(--nav-shadow);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1060;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1050;
+        }
+
+        .highlight-update {
+            animation: highlightField 1s ease;
+        }
+
+        @keyframes highlightField {
+            0% { background-color: var(--background-secondary); }
+            50% { background-color: var(--input-focus-border); }
+            100% { background-color: var(--background-secondary); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-box-open"></i> Home Inventory Manager 
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <button id="theme-toggle-btn" class="btn btn-link nav-link">
+                            <i class="fas fa-sun light-icon"></i>
+                            <i class="fas fa-moon dark-icon" style="display: none;"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="mb-4">Add New Item</h2>
+        <div class="card">
+            <div class="card-body">
+                <form id="addItemForm" method="POST" action="{{ url_for('add_item_post') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                        <button type="button" id="getSuggestionsBtn" class="btn btn-sm btn-primary mt-2">Get Suggestions</button>
+                    </div>
+                    
+                    <div id="loadingSpinner" class="d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                    <div id="suggestionsContainer" class="mt-3"></div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="location" name="location" list="locationsList">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown">
+                                    Quick Select
+                                </button>
+                                <div class="dropdown-menu" id="locationsDropdown">
+                                    <!-- Locations will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        <datalist id="locationsList">
+                            <!-- Locations will be populated here as well -->
+                        </datalist>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
+                            </div>
+                            <input type="number" class="form-control text-center" id="quantity" name="quantity" value="1" min="1">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image">Image</label>
+                        <div class="custom-file mb-2">
+                            <input type="file" class="custom-file-input" id="image" name="image">
+                            <label class="custom-file-label" for="image">Choose file...</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="image_url" name="image_url" 
+                                   placeholder="Or enter image URL">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" onclick="previewImageUrl()">
+                                    Preview
+                                </button>
+                            </div>
+                        </div>
+                        <div id="imagePreview" class="mt-2" style="display: none;">
+                            <img src="" class="img-fluid" style="max-height: 200px;">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container"></div>
+    <div class="loading-overlay">
+        <div class="spinner-border text-light" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const lightIcon = document.querySelector('.light-icon');
+        const darkIcon = document.querySelector('.dark-icon');
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateIcon(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon(newTheme);
+        });
+
+        function updateIcon(theme) {
+            if (theme === 'dark') {
+                lightIcon.style.display = 'none';
+                darkIcon.style.display = 'inline-block';
+            } else {
+                lightIcon.style.display = 'inline-block';
+                darkIcon.style.display = 'none';
+            }
+        }
+
+        function displaySuggestions(data) {
+            const container = document.getElementById('suggestionsContainer');
+            container.innerHTML = '';
+            
+            data.forEach((suggestion, index) => {
+                const card = document.createElement('div');
+                card.className = 'card mb-3 suggestion-card';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${suggestion.title}</h5>
+                        <p class="card-text">${suggestion.description}</p>
+                        <div class="suggestion-image-container">
+                            <img src="${suggestion.image_url}" 
+                                 class="img-fluid" 
+                                 alt="${suggestion.title}"
+                                 onerror="this.src='https://via.placeholder.com/400x300?text=${encodeURIComponent(suggestion.title)}'">
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary mt-2" onclick="applySuggestion(${index})">
+                            Use This
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            // Add keyboard navigation
+            document.addEventListener('keydown', handleKeyboardNavigation);
+        }
+
+        function handleKeyboardNavigation(e) {
+            const cards = document.querySelectorAll('.suggestion-card');
+            const active = document.activeElement;
+            let index = Array.from(cards).indexOf(active);
+
+            switch(e.key) {
+                case 'Escape':
+                    document.getElementById('suggestionsContainer').innerHTML = '';
+                    break;
+                case 'Enter':
+                    if (index !== -1) applySuggestion(index);
+                    break;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast bg-${type}`;
+            toast.innerHTML = `
+                <div class="toast-body text-white">
+                    ${message}
+                </div>
+            `;
+            document.querySelector('.toast-container').appendChild(toast);
+            $(toast).toast({ delay: 3000 }).toast('show');
+        }
+
+        function applySuggestion(index) {
+            const overlay = document.querySelector('.loading-overlay');
+            overlay.style.display = 'flex';
+            
+            try {
+                const suggestions = document.querySelectorAll('#suggestionsContainer .card');
+                const selected = suggestions[index];
+                
+                const titleInput = document.getElementById('title');
+                const descriptionInput = document.getElementById('description');
+                
+                titleInput.value = selected.querySelector('.card-title').textContent;
+                descriptionInput.value = selected.querySelector('.card-text').textContent;
+                
+                titleInput.classList.add('highlight-update');
+                descriptionInput.classList.add('highlight-update');
+                
+                setTimeout(() => {
+                    titleInput.classList.remove('highlight-update');
+                    descriptionInput.classList.remove('highlight-update');
+                }, 1000);
+                
+                document.getElementById('suggestionsContainer').innerHTML = '';
+                showToast('Suggestion applied successfully!');
+            } catch (error) {
+                showToast(error.message, 'danger');
+                console.error('Error:', error);
+            } finally {
+                overlay.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

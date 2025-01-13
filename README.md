@@ -15,6 +15,8 @@ VERY EARLY VERSION
 - 💾 Automatic SQLite database setup
 - 📱 Responsive design
 - 🔒 CSRF protection
+- Location filtering & quick select
+- AI-powered product suggestions
 
 ## Quick Start 🎯
 
@@ -75,16 +77,9 @@ docker run -p 5000:5000 inventory-app
 - Theme persistence across sessions
 - Smooth transition animations
 
-### Image Processing 🖼️
-- Automatic image resizing to 800px max height
-- WebP conversion for optimal file size
-- PNG transparency handling
-- Maintains aspect ratio
-- High-quality Lanczos resampling
-
 ## Technical Details 🔧
 
-### Image Processing
+### Image Processing 🖼️
 - Images are automatically processed on upload:
   - Converted to WebP format
   - Resized to max height of 800px
@@ -92,13 +87,19 @@ docker run -p 5000:5000 inventory-app
   - PNG transparency handled
   - Quality set to 85%
   - WebP compression method 6 (best quality)
+- Support for URL image imports
+
+### AI Integration
+- Google's Gemini AI for product suggestions
+- Intelligent title and description generation
+- Smart product categorization
 
 ### File Types
 Supported image formats:
 - PNG (with transparency support)
 - JPG/JPEG
 - GIF
-
+- Images from URLs
 
 ## Dependencies 📦
 
@@ -109,6 +110,9 @@ Flask-WTF==1.0.0
 Pillow==10.1.0
 Werkzeug==2.0.1
 SQLAlchemy==1.4.23
+google-generativeai==0.3.0
+python-dotenv==1.0.0
+requests==2.31.0
 ```
 
 

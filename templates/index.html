@@ -13,6 +13,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicons/favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <style>
         :root[data-theme="light"] {
@@ -143,7 +144,7 @@
 
         .page-link:hover {
             background-color: var(--background-primary);
-            color: var(--text-primary);
+            color: var (--text-primary);
         }
     </style>
 </head>
@@ -166,70 +167,54 @@
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Search Container -->
-        <div class="search-container mb-4">
-            <div class="input-group">
-                <input type="text" 
-                       id="searchInput" 
-                       class="form-control" 
-                       placeholder="Search items..." 
-                       autocomplete="off">
-                <div class="input-group-append">
-                    <span class="input-group-text">
-                        <i class="fas fa-search"></i>
-                    </span>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="search-container">
+                <div class="input-group">
+                    <input type="text" 
+                           id="searchInput" 
+                           class="form-control" 
+                           placeholder="Search items..." 
+                           autocomplete="off">
+                    <div class="input-group-append">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
                 </div>
+                <div id="searchResults" class="search-results shadow-sm"></div>
             </div>
-            <div id="searchResults" class="search-results shadow-sm"></div>
+            <a href="{{ url_for('add_item') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Item
+            </a>
         </div>
 
-        <!-- Add Item Button -->
-        <button id="toggleFormBtn" class="btn btn-primary mb-3">
-            <i class="fas fa-plus"></i> Add New Item
-        </button>
-
-        <!-- Add Item Form -->
-        <div id="itemFormContainer" style="display: none;">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Add New Item</h5>
-                    <button type="button" class="close" id="closeForm">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <div class="form-group">
-                            <label for="title">Title</label>
-                            <input type="text" class="form-control" id="title" name="title" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="location">Location</label>
-                            <input type="text" class="form-control" id="location" name="location">
-                        </div>
-                        <div class="form-group">
-                            <label for="quantity">Quantity</label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
-                                </div>
-                                <input type="number" class="form-control text-center" id="quantity" name="quantity" value="1" min="1">
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity()">+</button>
-                                </div>
+        <!-- Add after search container, before items list -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">Filter Options</h6>
+                        <div class="form-row">
+                            <div class="col-md-6 mb-2">
+                                <label for="locationFilter">Location</label>
+                                <select class="form-control" id="locationFilter">
+                                    <option value="">All Locations</option>
+                                    {% for location in locations %}
+                                    <option value="{{ location }}">{{ location }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="sortBy">Sort By</label>
+                                <select class="form-control" id="sortBy">
+                                    <option value="date_desc">Newest First</option>
+                                    <option value="date_asc">Oldest First</option>
+                                    <option value="title_asc">Title A-Z</option>
+                                    <option value="title_desc">Title Z-A</option>
+                                </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="image">Image</label>
-                            <input type="file" class="form-control-file" id="image" name="image">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Item</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -275,6 +260,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
     <script>
         // Theme toggle functionality
@@ -394,6 +380,70 @@
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
                 searchResults.style.display = 'none';
+            }
+        });
+    </script>
+
+    <!-- Add before the closing </body> tag -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Script loaded');
+            const suggestionsBtn = document.getElementById('getSuggestionsBtn');
+            console.log('Button element:', suggestionsBtn);
+            
+            if (suggestionsBtn) {
+                suggestionsBtn.addEventListener('click', async function() {
+                    console.log('Button clicked');
+                    const titleInput = document.getElementById('title');
+                    
+                    if (!titleInput.value) {
+                        alert('Please enter a title first');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/get_suggestions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                title: titleInput.value
+                            })
+                        });
+
+                        console.log('Response status:', response.status);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('Suggestions:', data);
+                        
+                        // Display suggestions
+                        const container = document.getElementById('suggestionsContainer');
+                        container.innerHTML = '';
+                        
+                        data.forEach(suggestion => {
+                            const card = document.createElement('div');
+                            card.className = 'card mb-2';
+                            card.innerHTML = `
+                                <div class="card-body">
+                                    <h5 class="card-title">${suggestion.title}</h5>
+                                    <p class="card-text">${suggestion.description}</p>
+                                    <img src="${suggestion.image_url}" class="img-fluid mb-2" alt="Suggestion image">
+                                    <button class="btn btn-sm btn-primary use-suggestion">Use this</button>
+                                </div>
+                            `;
+                            container.appendChild(card);
+                        });
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
             }
         });
     </script>
